@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # Description: Check that vlans match on PROD and DR
 # Author: Lucci
-# Version: 1
+# Author: Troy <twc17@pitt.edu>
+# Date Updated: 09/14/2017
+# Version: 1.1
 
 import os, re, sys, glob
 from optparse import OptionParser
@@ -25,19 +27,8 @@ parser.add_option("-v", "--verbose",
 
 # Compare two lists for differences
 def compare_lists(list1, list2):
-  # Returns True if the lists match False otherwise
-
-  diff_list = [item for item in list1 if not item in list2]
-
-  diff_list2 = [item for item in list2 if not item in list1]
-
-  if (len(diff_list) > 0) or (len(diff_list2) > 0):
-    return False
-
-  else:
-    return True
-
-
+    # List comprehension. Returns two lists, with only the differences between the original lists
+    return [[item for item in list1 if not item in list2], [item for item in list2 if not item in list1]]
 
 #
 # Get latest configs
@@ -172,3 +163,10 @@ for vlan in sorted(switches["fqdr-core-1"]["vlans"]):
 
   except KeyError:
     sys.stdout.write("vlan " + vlan + " is missing on rd-core-1 (exists on fqdr-core-1)!\n")
+
+
+# main():
+# for each switch in switch_list
+#   get the latest configs
+#   search configs for VLANs
+# compare lists and output diffs
