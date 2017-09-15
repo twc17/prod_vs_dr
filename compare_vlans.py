@@ -2,8 +2,8 @@
 # Description: Check that vlans match on PROD and DR
 # Author: Lucci
 # Author: Troy <twc17@pitt.edu>
-# Date Updated: 09/14/2017
-# Version: 1.1
+# Date Updated: 09/15/2017
+# Version: 1.1.1
 
 import os, re, sys, glob
 from optparse import OptionParser
@@ -33,136 +33,68 @@ def compare_lists(list1, list2):
 #
 # Get latest configs
 #
+def get_latest_config(switch):
+    if options.verbose is True: sys.stdout.write("Finding the latest config files ...\n")
 
-if options.verbose is True: sys.stdout.write("Finding the latest config files ...\n")
+    latest_config = ""
 
-for switch in switches:
-  highest_mtime = int()
+    for config_file in glob.iglob("/tftpboot/ciscoconfg/" + switch + ".gw*"):
+        if options.verbose: sys.stdout.write("Checking file " + config_file + " ...\n")
 
-  latest_config = ""
+        mtime = os.stat(config_file).st_mtime
 
-  switch_dict = switches[switch]
+        if mtime > highest_mtime:
+            latest_config = config_file
 
-  for config_file in glob.iglob("/tftpboot/ciscoconfg/" + switch + ".gw*"):
-    if options.verbose: sys.stdout.write("Checking file " + config_file + " ...\n")
+            highest_mtime = mtime
 
-    mtime = os.stat(config_file).st_mtime
-
-    if mtime > highest_mtime:
-      latest_config = config_file
-
-      highest_mtime = mtime
-
-  # Build a dictionary of switch to latest config file
-  switch_dict.update({"latest_config" : latest_config})
-
+    return latest_config
 
 
 #
 # Loop through configs looking for vlans
 #
-
-if options.verbose is True: sys.stdout.write("Reading the latest config files ...\n")
-
-for switch in switches:
-  switch_dict = switches[switch]
-
-  switch_dict.update({
-    "vlans" : {}
-  })
-
-  vlans_dict = switch_dict["vlans"]
-
-  vlan = ""
-
-  try:
-    print ("Latest config: " + switch_dict["latest_config"])
-    config_file_handle = open(switch_dict["latest_config"], "r")
-
-  except IOError as err:
-    sys.stderr.write("Failed to open latest config file for " + switch + "\n")
-
-  for line in config_file_handle:
-    line = line.rstrip()
-
-    # Did we hit a new vlan?
-    match = re.match("vlan ", line)
-
-    if match is not None:
-        if ',' not in line:
-          vlan = line.split()[-1]
-
-          if options.verbose is True: sys.stdout.write("Found a vlan " + vlan + "\n")
-
-      # Add the vlan to the dictionary for this switch
-          vlans_dict.update({
-            vlan : []
-          })
-
-          continue
-
-    # find next vlan
-    match = re.match(" name", line)
-
-    if match is not None:
-      if options.verbose is True: sys.stdout.write("Found a new vlan " + vlan + " : " + line + "\n")
-
-      current_vlan_list = vlans_dict[vlan]
-
-      current_vlan_list.append(line)
-
-  config_file_handle.close()
+def get_vlans(latest_config):
+    if options.verbose is True: sys.stdout.write("Reading the latest config files ...\n")
 
 
+    vlans = []
 
-#
-# Compare the lists 
+    try:
+        print ("Latest config: " + latest_config)
+        config_file_handle = open(latest_config, "r")
 
-if options.verbose is True: sys.stdout.write("Comparing vlans for rd-core-1 vs fqdr-core-1 ...\n")
-sys.stdout.write("\n")
+    except IOError as err:
+        sys.stderr.write("Failed to open latest config file " + latest_config + "\n")
 
-for vlan in sorted(switches["rd-core-1"]["vlans"]):
-  if options.verbose is True: sys.stdout.write("Checking vlans: " + vlan + "\n")
+    for line in config_file_handle:
+        line = line.rstrip()
 
-  try:
-    if compare_lists(switches["rd-core-1"]["vlans"][vlan], switches["fqdr-core-1"]["vlans"][vlan]) is False:
-      sys.stdout.write("vlan " + vlan + " differs between fqdr-core-1 and rd-core-1!\n")
+        # Did we hit a new vlan?
+        match = re.match("vlan ", line)
 
-      for rule in switches["rd-core-1"]["vlans"][vlan]:
-        if rule not in switches["fqdr-core-1"]["vlans"][vlan]:
-          sys.stdout.write("     Missing vlan on fqdr-core-1: " + rule + "\n")
+        if match is not None:
+            if ',' not in line:
+                vlan.append(line.split()[-1])
+                if options.verbose is True: sys.stdout.write("Found a vlan " + vlan[-1] + "\n")
+                continue
 
-      for rule in switches["fqdr-core-1"]["vlans"][vlan]:
-        if rule not in switches["rd-core-1"]["vlans"][vlan]:
-          sys.stdout.write("     Missing vlan on rd-core-1: " + rule + "\n")
+        # I don't think this code is actually doing anyting...?
+        # find next vlan
+        # match = re.match(" name", line)
 
-  except KeyError:
-    sys.stdout.write("vlan " + vlan + " is missing on fqdr-core-1 (exists on rd-core-1)!\n")
+        # if match is not None:
+         #   if options.verbose is True: sys.stdout.write("Found a new vlan " + vlan + " : " + line + "\n")
 
+         #   current_vlan_list = vlans_dict[vlan]
 
+         #   current_vlan_list.append(line)
 
-# Compare the lists 
+    # config_file_handle.close()
 
-if options.verbose is True: sys.stdout.write("Comparing vlans for dr and prod ...\n")
-sys.stdout.write("\n")
-
-for vlan in sorted(switches["fqdr-core-1"]["vlans"]):
-  if options.verbose is True: sys.stdout.write("Checking vlans: " + vlan + "\n")
-
-  try:
-    if compare_lists(switches["fqdr-core-1"]["vlans"][vlan], switches["rd-core-1"]["vlans"][vlan]) is False:
-      sys.stdout.write("vlan " + vlan + " differs between rd-core-1 and fqdr-core-1!\n")
-
-      for rule in switches["fqdr-core-1"]["vlans"][vlan]:
-        if rule not in switches["rd-core-1"]["vlans"][vlan]:
-          sys.stdout.write("     Missing vlan on rd-core-1: " + rule + "\n")
-
-      for rule in switches["rd-core-1"]["vlans"][vlan]:
-        if rule not in switches["fqdr-core-1"]["vlans"][vlan]:
-          sys.stdout.write("     Missing rule on rd-core-1: " + rule + "\n")
-
-  except KeyError:
-    sys.stdout.write("vlan " + vlan + " is missing on rd-core-1 (exists on fqdr-core-1)!\n")
+def main():
+    for switch in switches:
+        switches[switch]
 
 
 # main():
