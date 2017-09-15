@@ -6,24 +6,6 @@
 # Version: 1.1.1
 
 import os, re, sys, glob
-from optparse import OptionParser
-
-
-switches = {
-  "rd-core-1" : {},
-  "fqdr-core-1" : {}
-}
-
-
-parser = OptionParser("%prog [options] $nodes\nCheck that vlans on switches match")
-
-parser.add_option("-v", "--verbose",
-                  action="store_true", dest="verbose", default=False,
-                  help="Verbose mode")
-
-(options, args) = parser.parse_args()
-
-
 
 # Compare two lists for differences
 def compare_lists(list1, list2):
@@ -34,12 +16,9 @@ def compare_lists(list1, list2):
 # Get latest configs
 #
 def get_latest_config(switch):
-    if options.verbose is True: sys.stdout.write("Finding the latest config files ...\n")
-
     latest_config = ""
 
     for config_file in glob.iglob("/tftpboot/ciscoconfg/" + switch + ".gw*"):
-        if options.verbose: sys.stdout.write("Checking file " + config_file + " ...\n")
 
         mtime = os.stat(config_file).st_mtime
 
@@ -55,9 +34,6 @@ def get_latest_config(switch):
 # Loop through configs looking for vlans
 #
 def get_vlans(latest_config):
-    if options.verbose is True: sys.stdout.write("Reading the latest config files ...\n")
-
-
     vlans = []
 
     try:
@@ -76,15 +52,15 @@ def get_vlans(latest_config):
         if match is not None:
             if ',' not in line:
                 vlan.append(line.split()[-1])
-                if options.verbose is True: sys.stdout.write("Found a vlan " + vlan[-1] + "\n")
                 continue
+
+    return vlans
 
         # I don't think this code is actually doing anyting...?
         # find next vlan
         # match = re.match(" name", line)
 
         # if match is not None:
-         #   if options.verbose is True: sys.stdout.write("Found a new vlan " + vlan + " : " + line + "\n")
 
          #   current_vlan_list = vlans_dict[vlan]
 
@@ -93,9 +69,19 @@ def get_vlans(latest_config):
     # config_file_handle.close()
 
 def main():
-    for switch in switches:
-        switches[switch]
 
+    switches = [
+    "rd-core-1",
+    "fqdr-core-1",
+    ]
+
+    prod_config = get_latest_config(switches[0])
+    dr_config = get_latest_config(switches[1])
+
+    prod_vlans = get_vlans(prod_config)
+    dr_vlans = get_vlans(dr_config)
+
+    prod_diff, dr_diff = compare_lists(prod_vlans, dr_vlans)
 
 # main():
 # for each switch in switch_list
