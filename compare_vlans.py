@@ -4,7 +4,7 @@
 # Author: Lucci
 # Author: Troy <twc17@pitt.edu>
 # Date Updated: 09/16/2017
-# Version: 1.2.1
+# Version: 1.3.1
 
 import os, re, sys, glob
 
