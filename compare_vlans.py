@@ -3,8 +3,8 @@
 # Description: Check that vlans match on PROD and DR
 # Author: Lucci
 # Author: Troy <twc17@pitt.edu>
-# Date Updated: 09/15/2017
-# Version: 1.1.1
+# Date Updated: 09/16/2017
+# Version: 1.2.1
 
 import os, re, sys, glob
 
@@ -44,15 +44,19 @@ def get_vlans(latest_config):
     except IOError as err:
         sys.stderr.write("Failed to open latest config file " + latest_config + "\n")
 
-    for line in config_file_handle:
-        line = line.rstrip()
+    all_lines = config_file_handle.readlines()
+
+    for x in range(0, len(all_lines)):
+        line = all_lines[x].rstrip()
 
         # Did we hit a new vlan?
         match = re.match("vlan ", line)
 
         if match is not None:
             if ',' not in line:
-                vlans.append(line.split()[-1])
+                vlan_id = line.split()[-1]
+                vlan_name = all_lines[x+1].rstrip().split()[-1]
+                vlans.append(vlan_id + " " + vlan_name)
                 continue
 
     return vlans
@@ -74,14 +78,11 @@ def main():
 
     prod_diff, dr_diff = compare_lists(prod_vlans, dr_vlans)
 
+    print("prod_diff:" + str(len(prod_diff)))
+    print("dr_diff:" + str(len(dr_diff)))
+    print
     print(prod_diff)
     print(dr_diff)
 
 if __name__ == "__main__":
     main()
-
-# main():
-# for each switch in switch_list
-#   get the latest configs
-#   search configs for VLANs
-# compare lists and output diffs
