@@ -5,6 +5,10 @@
 # Author: Troy <twc17@pitt.edu>
 # Date Updated: 09/16/2017
 # Version: 1.3.1
+#
+# TODO: Want to change return value of get_vlans to a dictionary. Should then be able to do
+#   list comprehension on the key values, return a list of key values, then print only those keys
+#   from the dictionary. That way we are not comparing VLAN ID + Name, and just ID
 
 import os, re, sys, glob
 
