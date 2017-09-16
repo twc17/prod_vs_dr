@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/python
+
 # Description: Check that vlans match on PROD and DR
 # Author: Lucci
 # Author: Troy <twc17@pitt.edu>
@@ -51,22 +52,10 @@ def get_vlans(latest_config):
 
         if match is not None:
             if ',' not in line:
-                vlan.append(line.split()[-1])
+                vlans.append(line.split()[-1])
                 continue
 
     return vlans
-
-        # I don't think this code is actually doing anyting...?
-        # find next vlan
-        # match = re.match(" name", line)
-
-        # if match is not None:
-
-         #   current_vlan_list = vlans_dict[vlan]
-
-         #   current_vlan_list.append(line)
-
-    # config_file_handle.close()
 
 def main():
 
@@ -75,13 +64,21 @@ def main():
     "fqdr-core-1",
     ]
 
-    prod_config = get_latest_config(switches[0])
-    dr_config = get_latest_config(switches[1])
+    # prod_config = get_latest_config(switches[0])
+    # dr_config = get_latest_config(switches[1])
+    prod_config = "rd-core-1.gw-confg.201709141130"
+    dr_config = "fqdr-core-1.gw-confg.201709141130"
 
     prod_vlans = get_vlans(prod_config)
     dr_vlans = get_vlans(dr_config)
 
     prod_diff, dr_diff = compare_lists(prod_vlans, dr_vlans)
+
+    print(prod_diff)
+    print(dr_diff)
+
+if __name__ == "__main__":
+    main()
 
 # main():
 # for each switch in switch_list
