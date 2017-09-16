@@ -21,8 +21,6 @@ def compare_lists(list1, list2):
 # Get latest configs
 #
 def get_latest_config(switch):
-    latest_config = ""
-
     for config_file in glob.iglob("/tftpboot/ciscoconfg/" + switch + ".gw*"):
 
         mtime = os.stat(config_file).st_mtime
@@ -33,7 +31,6 @@ def get_latest_config(switch):
             highest_mtime = mtime
 
     return latest_config
-
 
 #
 # Loop through configs looking for vlans
@@ -66,7 +63,6 @@ def get_vlans(latest_config):
     return vlans
 
 def main():
-
     switches = [
     "rd-core-1",
     "fqdr-core-1",
