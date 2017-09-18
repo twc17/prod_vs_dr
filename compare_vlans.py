@@ -4,18 +4,16 @@
 # Author: Lucci
 # Author: Troy <twc17@pitt.edu>
 # Date Updated: 09/16/2017
-# Version: 1.3.1
+# Version: 1.3.2
 #
-# TODO: Want to change return value of get_vlans to a dictionary. Should then be able to do
-#   list comprehension on the key values, return a list of key values, then print only those keys
-#   from the dictionary. That way we are not comparing VLAN ID + Name, and just ID
+# TODO: Check how I'm comparing VLAN IDs. Updated data strcut to a dict. 
 
 import os, re, sys, glob
 
 # Compare two lists for differences
 def compare_lists(list1, list2):
     # List comprehension. Returns two lists, with only the differences between the original lists
-    return [[item for item in list1 if not item in list2], [item for item in list2 if not item in list1]]
+    return [[item for item in list1.keys() if not item in list2.keys()], [item for item in list2.keys() if not item in list1.keys()]]
 
 #
 # Get latest configs
@@ -36,7 +34,7 @@ def get_latest_config(switch):
 # Loop through configs looking for vlans
 #
 def get_vlans(latest_config):
-    vlans = []
+    vlans = {}
 
     try:
         print ("Latest config: " + latest_config)
@@ -57,7 +55,7 @@ def get_vlans(latest_config):
             if ',' not in line:
                 vlan_id = line.split()[-1]
                 vlan_name = all_lines[x+1].rstrip().split()[-1]
-                vlans.append(vlan_id + " " + vlan_name)
+                vlans[vlan_id] = vlan_name
                 continue
 
     return vlans
