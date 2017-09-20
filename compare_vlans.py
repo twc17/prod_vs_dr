@@ -79,8 +79,13 @@ def main():
     print("prod_diff:" + str(len(prod_diff)))
     print("dr_diff:" + str(len(dr_diff)))
     print
-    print(prod_diff)
-    print(dr_diff)
+    print("On prod, but not dr")
+    for pdiff in prod_diff:
+        print(pdiff + ' ' + prod_vlans[pdiff])
+    print
+    print("On dr, but not prod")
+    for ddiff in dr_diff:
+        print(ddiff + ' ' + dr_vlans[ddiff])
 
 if __name__ == "__main__":
     main()
