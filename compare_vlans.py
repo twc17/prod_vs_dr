@@ -11,7 +11,7 @@
 #   Compare VLANs from RIDC Production and the DR site
 #
 # Dependencies:
-#   python2.6+
+#   python 2.6.6+
 #
 # Usage:
 #   python compare_vlans.py [-h]
@@ -90,7 +90,7 @@ def get_vlans(latest_config):
         # This makes the string easier to work with
         line = all_lines[x].rstrip()
 
-        # Check to see if we found the work 'vlan' in the given line
+        # Check to see if we found the word 'vlan' in the given line
         match = re.match("vlan ", line)
 
         if match is not None:
