@@ -3,10 +3,10 @@
 # Description: Check that vlans match on PROD and DR
 # Author: Lucci
 # Author: Troy <twc17@pitt.edu>
-# Date Updated: 09/16/2017
-# Version: 1.3.2
+# Date Updated: 09/20/2017
+# Version: 1.3.3
 #
-# TODO: Check how I'm comparing VLAN IDs. Updated data strcut to a dict. 
+# TODO: Verify output, and test getting the latest config when running on tsunami
 
 import os, re, sys, glob
 
