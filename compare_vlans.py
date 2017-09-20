@@ -19,6 +19,8 @@ def compare_lists(list1, list2):
 # Get latest configs
 #
 def get_latest_config(switch):
+    highest_mtime = int()
+
     for config_file in glob.iglob("/tftpboot/ciscoconfg/" + switch + ".gw*"):
 
         mtime = os.stat(config_file).st_mtime
@@ -37,7 +39,6 @@ def get_vlans(latest_config):
     vlans = {}
 
     try:
-        print ("Latest config: " + latest_config)
         config_file_handle = open(latest_config, "r")
 
     except IOError as err:
@@ -66,16 +67,17 @@ def main():
     "fqdr-core-1",
     ]
 
-    # prod_config = get_latest_config(switches[0])
-    # dr_config = get_latest_config(switches[1])
-    prod_config = "rd-core-1.gw-confg.201709141130"
-    dr_config = "fqdr-core-1.gw-confg.201709141130"
+    prod_config = get_latest_config(switches[0])
+    dr_config = get_latest_config(switches[1])
 
     prod_vlans = get_vlans(prod_config)
     dr_vlans = get_vlans(dr_config)
 
     prod_diff, dr_diff = compare_lists(prod_vlans, dr_vlans)
 
+    print("Latest Prod Config: " + prod_config)
+    print("Latest DR Config: " + dr_config)
+    print
     print("prod_diff:" + str(len(prod_diff)))
     print("dr_diff:" + str(len(dr_diff)))
     print
